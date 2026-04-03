@@ -28,18 +28,28 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
-      - name: Build Windows with NSIS installer
+      - name: Build Windows exe
         working-directory: desktop
         run: |
-          wails build -platform windows/amd64 -nsis
+          wails build -platform windows/amd64 -o n2nGUI.exe
+
+      - name: Build NSIS installer
+        working-directory: desktop
+        env:
+          NSISDIR: 'C:\Program Files (x86)\NSIS'
+        run: |
+          $script = ".\build\windows\installer\project.nsi"
+          & "$env:NSISDIR\makensis.exe" $script
 
       - name: List build outputs
         run: |
-          dir desktop\\build\\bin\\
+          Get-ChildItem desktop/build/bin/
 
       - name: Upload Windows assets
         uses: softprops/action-gh-release@v2
         with:
-          files: desktop/build/bin/*
+          files: |
+            desktop/build/bin/n2nGUI.exe
+            desktop/build/bin/*-setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
