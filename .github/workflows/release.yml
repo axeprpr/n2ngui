@@ -28,18 +28,35 @@ jobs:
       - name: Install NSIS
         run: choco install nsis -y
 
+      - name: Debug paths
+        run: |
+          Write-Host "PWD: $PWD"
+          Write-Host "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
+          Get-ChildItem | Select-Object Name
+
       - name: Build Windows exe
         working-directory: desktop
         run: |
           wails build -platform windows/amd64 -o n2nGUI.exe
+          Write-Host "Built exe, listing bin directory:"
+          Get-ChildItem "$PWD\build\bin"
 
       - name: Build NSIS installer
         working-directory: desktop
         env:
           NSISDIR: 'C:\Program Files (x86)\NSIS'
         run: |
+          Write-Host "NSIS path: $env:NSISDIR"
+          Write-Host "PWD: $PWD"
           $script = Join-Path $PWD "build\windows\installer\project.nsi"
-          & "$env:NSISDIR\makensis.exe" $script
+          Write-Host "Script: $script"
+          if (Test-Path $script) {
+            Write-Host "Script exists, running makensis..."
+            & "$env:NSISDIR\makensis.exe" $script
+          } else {
+            Write-Host "Script not found!"
+            Get-ChildItem "$PWD\build\windows\installer"
+          }
 
       - name: List build outputs
         run: |
