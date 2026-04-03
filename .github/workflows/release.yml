@@ -14,6 +14,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -22,12 +24,11 @@ jobs:
 
       - name: Install Wails CLI
         run: |
+          $env:Path += ";$env:USERPROFILE\go\bin"
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          echo "$(go env GOPATH)/bin" >> "$env:PATH"
 
       - name: Install NSIS
-        run: |
-          choco install nsis -y
+        run: choco install nsis -y
 
       - name: Build Windows with NSIS installer
         working-directory: desktop
