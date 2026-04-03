@@ -19,6 +19,8 @@ const els = {
   saveButton: document.getElementById("save-button"),
   startButton: document.getElementById("start-button"),
   stopButton: document.getElementById("stop-button"),
+  clearLogsButton: document.getElementById("clear-logs-button"),
+  exportLogsButton: document.getElementById("export-logs-button"),
 };
 
 function showToast(message) {
@@ -152,6 +154,31 @@ async function refreshLogs() {
   renderLogs(entries);
 }
 
+async function clearLogs() {
+  await api("/api/logs", { method: "DELETE" });
+  state.lastLogID = 0;
+  els.logView.textContent = "No logs yet.";
+  showToast("Log buffer cleared");
+}
+
+async function exportLogs() {
+  const response = await fetch("/api/logs/export");
+  if (!response.ok) {
+    throw new Error(`Export failed: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "n2n-edge.log";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("Logs exported");
+}
+
 async function saveConfig() {
   const config = readConfig();
   await api("/api/config", {
@@ -184,6 +211,12 @@ function bindEvents() {
   );
   els.stopButton.addEventListener("click", () =>
     stopEdge().catch((error) => showToast(error.message)),
+  );
+  els.clearLogsButton.addEventListener("click", () =>
+    clearLogs().catch((error) => showToast(error.message)),
+  );
+  els.exportLogsButton.addEventListener("click", () =>
+    exportLogs().catch((error) => showToast(error.message)),
   );
 }
 

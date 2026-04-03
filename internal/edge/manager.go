@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -165,6 +166,31 @@ func (m *Manager) Logs(since int64) []LogEntry {
 		}
 	}
 	return out
+}
+
+func (m *Manager) ClearLogs() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.logs = nil
+	m.appendLogLocked("system", "log buffer cleared")
+}
+
+func (m *Manager) ExportLogs() string {
+	m.mu.Lock()
+	logs := append([]LogEntry(nil), m.logs...)
+	m.mu.Unlock()
+
+	var out strings.Builder
+	for _, entry := range logs {
+		out.WriteString(entry.Timestamp.Format(time.RFC3339))
+		out.WriteString(" ")
+		out.WriteString(strings.ToUpper(entry.Stream))
+		out.WriteString(" ")
+		out.WriteString(entry.Message)
+		out.WriteByte('\n')
+	}
+	return out.String()
 }
 
 func (m *Manager) Diagnostics() map[string]any {

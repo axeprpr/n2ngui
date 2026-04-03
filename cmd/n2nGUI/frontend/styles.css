@@ -260,6 +260,16 @@ select {
   align-items: center;
 }
 
+.panel-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.compact {
+  padding: 8px 14px;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -373,6 +383,11 @@ select:focus {
   .hero {
     flex-direction: column;
     align-items: start;
+  }
+
+  .panel-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

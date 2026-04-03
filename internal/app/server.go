@@ -33,6 +33,7 @@ func (s *Server) APIHandler() http.Handler {
 	mux.HandleFunc("/api/control/start", s.handleStart)
 	mux.HandleFunc("/api/control/stop", s.handleStop)
 	mux.HandleFunc("/api/logs", s.handleLogs)
+	mux.HandleFunc("/api/logs/export", s.handleLogsExport)
 	mux.HandleFunc("/api/diagnostics", s.handleDiagnostics)
 	return withCORS(mux)
 }
@@ -131,6 +132,16 @@ func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleLogs(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodDelete {
+		s.manager.ClearLogs()
+		writeJSON(w, http.StatusOK, map[string]string{"status": "cleared"})
+		return
+	}
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	since := int64(0)
 	if value := strings.TrimSpace(r.URL.Query().Get("since")); value != "" {
 		var parseErr error
@@ -142,6 +153,18 @@ func (s *Server) handleLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, s.manager.Logs(since))
+}
+
+func (s *Server) handleLogsExport(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="n2n-edge.log"`)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(s.manager.ExportLogs()))
 }
 
 func (s *Server) handleDiagnostics(w http.ResponseWriter, r *http.Request) {
