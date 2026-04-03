@@ -17,17 +17,17 @@ jobs:
           - platform: linux/amd64
             goos: linux
             goarch: amd64
-            cc: gcc
+            cgo: 1
             output: n2nGUI-linux-x64
           - platform: linux/arm64
             goos: linux
             goarch: arm64
-            cc: aarch64-linux-gnu-gcc
+            cgo: 0
             output: n2nGUI-linux-arm64
           - platform: windows/amd64
             goos: windows
             goarch: amd64
-            cc: ''
+            cgo: 1
             output: n2nGUI-windows-x64
 
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
 
       - name: Build ${{ matrix.platform }}
         run: |
-          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CC=${{ matrix.cc }} go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
+          CGO_ENABLED=${{ matrix.cgo }} GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CC=aarch64-linux-gnu-gcc go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
 
       - name: Upload ${{ matrix.platform }} asset
         uses: softprops/action-gh-release@v2
