@@ -34,13 +34,9 @@ jobs:
           NSISDIR: 'C:\Program Files (x86)\NSIS'
         run: |
           $ErrorActionPreference = 'Continue'
-          # Build the exe
           wails build -platform windows/amd64 -o n2nGUI.exe
-          # Try to build NSIS installer, but don't fail if it doesn't work
           $script = Join-Path $PWD "build\windows\installer\project.nsi"
           & "$env:NSISDIR\makensis.exe" $script 2>&1 | ForEach-Object { Write-Host $_ }
-          # List what was built
-          Get-ChildItem "$PWD\build\bin"
 
       - name: Upload Windows assets
         uses: softprops/action-gh-release@v2
