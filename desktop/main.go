@@ -1,5 +1,3 @@
-//go:build wails
-
 package main
 
 import (
