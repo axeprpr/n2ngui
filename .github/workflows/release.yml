@@ -47,7 +47,11 @@ jobs:
 
       - name: Build ${{ matrix.platform }}
         run: |
-          CGO_ENABLED=${{ matrix.cgo }} GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CC=aarch64-linux-gnu-gcc go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
+          if [ "${{ matrix.cgo }}" = "1" ]; then
+            CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
+          else
+            CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
+          fi
 
       - name: Upload ${{ matrix.platform }} asset
         uses: softprops/action-gh-release@v2
