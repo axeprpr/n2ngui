@@ -15,16 +15,16 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
-            arch: amd64
-            ext: ''
+            goos: linux
+            goarch: amd64
             output: n2nGUI-linux-x64
           - platform: linux/arm64
-            arch: arm64
-            ext: ''
+            goos: linux
+            goarch: arm64
             output: n2nGUI-linux-arm64
           - platform: windows/amd64
-            arch: amd64
-            ext: .exe
+            goos: windows
+            goarch: amd64
             output: n2nGUI-windows-x64
 
     runs-on: ubuntu-latest
@@ -37,19 +37,15 @@ jobs:
         with:
           go-version: '1.23'
 
-      - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-
       - name: Build ${{ matrix.platform }}
         run: |
-          wails build -platform ${{ matrix.platform }} -o ${{ matrix.output }}${{ matrix.ext }}
-        working-directory: desktop
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -tags wails -ldflags="-s -w" -o ${{ matrix.output }} ./desktop
         env:
-          GOPATH: /root/go
+          CGO_ENABLED: 1
 
       - name: Upload ${{ matrix.platform }} asset
         uses: softprops/action-gh-release@v2
         with:
-          files: desktop/${{ matrix.output }}${{ matrix.ext }}
+          files: ${{ matrix.output }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
