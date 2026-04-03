@@ -31,10 +31,10 @@ jobs:
       - name: Build Windows exe and installer
         env:
           NSISDIR: 'C:\Program Files (x86)\NSIS'
-          GITHUB_WORKSPACE: '${{ github.workspace }}'
         run: |
           $ErrorActionPreference = 'Continue'
-          $ws = "$env:GITHUB_WORKSPACE"
+          $ws = "${{ github.workspace }}"
+          $ws = $ws.Replace('\n', '\')
           Write-Host "Workspace: $ws"
           cd desktop
           wails build -platform windows/amd64 -o n2nGUI.exe
