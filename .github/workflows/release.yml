@@ -10,13 +10,7 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: windows/amd64
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
       - uses: actions/checkout@v4
@@ -29,16 +23,24 @@ jobs:
       - name: Install Wails CLI
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          echo "$(go env GOPATH)/bin" >> "$env:PATH"
 
-      - name: Build Windows
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+
+      - name: Build Windows with NSIS installer
         working-directory: desktop
         run: |
-          wails build -platform windows/amd64 -o n2nGUI-windows-x64.exe
+          wails build -platform windows/amd64 -nsis
 
-      - name: Upload Windows asset
+      - name: List build outputs
+        run: |
+          ls -la desktop/build/bin/
+
+      - name: Upload Windows assets
         uses: softprops/action-gh-release@v2
         with:
-          files: desktop/build/bin/n2nGUI-windows-x64.exe
+          files: desktop/build/bin/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
