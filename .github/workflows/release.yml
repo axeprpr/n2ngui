@@ -19,16 +19,19 @@ jobs:
             goarch: amd64
             cgo: 1
             output: n2nGUI-linux-x64
+            needs_deps: true
           - platform: linux/arm64
             goos: linux
             goarch: arm64
             cgo: 0
             output: n2nGUI-linux-arm64
+            needs_deps: false
           - platform: windows/amd64
             goos: windows
             goarch: amd64
             cgo: 1
             output: n2nGUI-windows-x64.exe
+            needs_deps: false
 
     runs-on: ubuntu-latest
     
@@ -44,6 +47,12 @@ jobs:
         run: |
           go install github.com/wailsapp/wails/v2/cmd/wails@latest
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install Linux build dependencies
+        if: matrix.needs_deps == 'true'
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev > /dev/null 2>&1
 
       - name: Install arm64 cross-compiler
         if: matrix.goarch == 'arm64'
